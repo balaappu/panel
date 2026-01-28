@@ -1,0 +1,198 @@
+step-by-step approach
+ADMIN PANEL
+
+step:1
+Execute Terminal -->node setupAdmin.js (enter)
+Hashed password: $2a$10$/C8hAI6.nMw95AapHyJZHupAoEh1ZNoA2Bnu29NCnfcsDRBuz0PTa
+User inserted successfully (setting admin email and password(hashed) for admin login)
+
+step:2
+MAIN FILE(index.js)
+Execute Terminal -->node index.js (enter)
+Server is running on port 4000
+
+POSTMAN
+LOGIN
+1)POST http://localhost:4000/admin/login
+
+Headers:
+Content-type:Application/json
+
+Body:(raw) JSON
+
+{
+  "email": "admin@example.com",
+  "password": "adminpassword"
+}
+
+
+o/p:
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoxLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3MjE3NTI0MTYsImV4cCI6MTcyMTc1NjAxNn0.3QtujUtFUxAWAdNvn1n7bSoxADuiwUfpyN13Eo6F64s"
+}
+
+
+2)USER CREATION (CREATE)
+POST http://localhost:4000/admin/users
+
+Headers:
+Content-type:Application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoxLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3MjE3NTI0MTYsImV4cCI6MTcyMTc1NjAxNn0.3QtujUtFUxAWAdNvn1n7bSoxADuiwUfpyN13Eo6F64s
+
+Body:(raw) JSON
+{
+  "username": "hari",
+  "email": "harikrishnan@gmail.com",
+  "password": "harikrishnan",
+  "role": "user"
+}
+
+O/P:
+{
+    "message": "User created successfully"
+}
+
+
+3)LISTING USERS (READ)
+GET http://localhost:4000/admin/users
+
+
+Headers:
+Content-type:Application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoxLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3MjE3NTI0MTYsImV4cCI6MTcyMTc1NjAxNn0.3QtujUtFUxAWAdNvn1n7bSoxADuiwUfpyN13Eo6F64s
+
+Body:(raw) JSON
+[
+    {
+        "id": 1,
+        "username": null,
+        "email": "admin@example.com",
+        "password": "$2a$10$/C8hAI6.nMw95AapHyJZHupAoEh1ZNoA2Bnu29NCnfcsDRBuz0PTa",
+        "role": "admin",
+        "photo": null
+    },
+    {
+        "id": 2,
+        "username": "siva",
+        "email": "sivakumar@gmail.com",
+        "password": "$2b$10$tXmkTq5Oao9VbDgUfBk.tO2AA7aS4dkxkUDLNB4lUzzraTivhA/mK",
+        "role": "user",
+        "photo": null
+    }
+]
+
+4)EDITING USERS (UPDATE)
+
+PUT http://localhost:4000/admin/users/2
+Headers:
+Content-type:Application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoxLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3MjE3NTI0MTYsImV4cCI6MTcyMTc1NjAxNn0.3QtujUtFUxAWAdNvn1n7bSoxADuiwUfpyN13Eo6F64s
+
+Body:(raw) JSON
+
+{
+  "username": "muthu",
+  "email": "muthukrishnan@gmail.com",
+  "password": "muthukrishnan",
+  "role": "user"
+}
+
+O/P:
+{
+    "message": "User updated successfully"
+}
+
+5)DELETE USERS(DELETE)
+DELETE http://localhost:4000/admin/users/2
+
+Headers:
+Content-type:Application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbklkIjoxLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3MjE3NTI0MTYsImV4cCI6MTcyMTc1NjAxNn0.3QtujUtFUxAWAdNvn1n7bSoxADuiwUfpyN13Eo6F64s
+
+O/P:
+
+{
+    "message": "User deleted successfully"
+}
+
+
+
+USER PANELS
+
+Execute Terminal -->node setupUser.js (enter)
+Hashed password: $2b$10$riJQmRWRKMTl/YBzMsTM7.mYOYQDTEBCdl61F.VhHLo6eOUTVKPrW
+User inserted successfully (setting USERS email and password(hashed) for admin login)
+
+MAIN FILE(index.js)
+Execute Terminal -->node index.js (enter)
+Server is running on port 4000
+
+POSTMAN
+1)LOGIN
+
+POST http://localhost:4000/user/login
+
+Headers:
+Content-type:Application/json
+
+Body:(raw) JSON
+{
+  "email": "user@example.com",
+  "password": "userpassword"
+}
+
+o/p:
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Niwicm9sZSI6InVzZXIiLCJpYXQiOjE3MjE3NTM5OTV9.APl6ap9nSBqAXep4sKOf9JrQcJRHD2PHGi53_gdCZNk"
+}
+
+2)UPLOAD PHOTO
+POST http://localhost:4000/user/upload-photo
+
+Headers:
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Niwicm9sZSI6InVzZXIiLCJpYXQiOjE3MjE3NTM5OTV9.APl6ap9nSBqAXep4sKOf9JrQcJRHD2PHGi53_gdCZNk
+
+BODY:
+form-data
+Key                     Value
+Photo    File              picture.jpeg
+
+o/p:
+{
+    "message": "Photo uploaded successfully",
+    "filename": "1721754505097-picture.jpeg"
+}
+
+
+3)RESET PASSWORD 
+
+POST http://localhost:4000/user/reset-password
+
+Headers:
+Content-type:Application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Niwicm9sZSI6InVzZXIiLCJpYXQiOjE3MjE3NTM5OTV9.APl6ap9nSBqAXep4sKOf9JrQcJRHD2PHGi53_gdCZNk
+Body:(raw) JSON
+
+{
+  "email": "muthukrishnan@gmail.com",
+  "newPassword": "muthukrish"
+}
+
+O/P:
+{
+    "message": "Password reset successfully"
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

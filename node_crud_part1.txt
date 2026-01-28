@@ -1,0 +1,307 @@
+APP.JS
+
+// Import required modules
+const path = require('path');
+const express = require('express');
+const ejs = require('ejs');
+const bodyParser = require('body-parser');
+const mysql = require('mysql2');
+const app = express();
+const jwt = require('jsonwebtoken');
+// Create a MySQL connection
+const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'node_crud'
+});
+
+// Connect to the MySQL database
+connection.connect(function (error) {
+    if (!!error) console.log(error);
+    else console.log('Database Connected!');
+});
+
+// Set the views directory
+app.set('views', path.join(__dirname, 'views'));
+
+// Set the view engine to EJS (Embedded JavaScript)
+app.set('view engine', 'ejs');
+
+// Middleware to parse JSON and URL-encoded bodies
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
+
+function verifyToken(req, res, next) {
+    const token = req.header('Authorization');
+    let keyValue = "secret-key";
+    if (!token) {
+        return res.status(401).json({error: 'Access denied. No token provided'});
+    }
+
+    jwt.verify(token, keyValue, (err, decoded) => {
+        if (err) {
+            return res.status(401).json({error: 'Invalid token'});
+        }
+        req.user = decoded;
+        next();
+    })
+}
+
+// Login API
+app.post('/generate-token', (req, res) => {
+    const {key} = req.body;
+    let keyValue = "secret-key";
+
+    // Replace this with your authentication logic (e.g., checking email and password)
+    if (key === keyValue) {
+        const user = {key}; // You can customize the user object
+
+        // Create a JWT token with a secret key (replace 'your-secret-key' with a strong secret)
+        const token = jwt.sign(user, keyValue, {expiresIn: '1h'});
+
+        res.status(200).json({token});
+    } else {
+        res.status(401).json({error: 'Invalid credentials'});
+    }
+});
+
+
+// Handle requests to the root path
+app.get('/', (req, res) => {
+    let sql = "SELECT * FROM users";
+    let query = connection.query(sql, (err, rows) => {
+        if (err) throw err;
+        // Render the 'user_index' view with data from the 'users' table
+        res.render('user_index', {
+            title: 'CRUD Operation using NodeJS / ExpressJS / MySQL',
+            users: rows
+        });
+    });
+});
+
+// Handle requests to the '/add' path
+app.get('/add', (req, res) => {
+    // Render the 'user_add' view
+    res.render('user_add', {
+        title: 'CRUD Operation using NodeJS / ExpressJS / MySQL'
+    });
+});
+
+// Handle POST requests to the '/save' path
+app.post('/save', verifyToken, (req, res) => {
+    let data = {name: req.body.name, email_id: req.body.email, phone_no: req.body.phone_no};
+    let sql = "INSERT INTO users SET ?";
+    let query = connection.query(sql, data, (err, results) => {
+        if (err) throw err;
+        // Redirect to the root path after saving data
+        res.redirect('/');
+    });
+});
+
+// Handle requests to the '/edit/:userId' path
+app.get('/edit/:userId', verifyToken, (req, res) => {
+    const userId = req.params.userId;
+    let sql = `Select *
+               from users
+               where id = ${userId}`;
+    let query = connection.query(sql, (err, result) => {
+        if (err) throw err;
+        // Render the 'user_edit' view with data of the specified user
+        res.render('user_edit', {
+            title: 'CRUD Operation using NodeJS / ExpressJS / MySQL',
+            user: result[0]
+        });
+    });
+});
+
+// Handle POST requests to the '/update' path
+app.post('/update', verifyToken, (req, res) => {
+    const userId = req.body.id;
+    let sql = "update users SET name='" + req.body.name + "',  email='" + req.body.email + "',  phone_no='" + req.body.phone_no + "' where id =" + userId;
+    let query = connection.query(sql, (err, results) => {
+        if (err) throw err;
+        // Redirect to the root path after updating data
+        res.redirect('/');
+    });
+});
+
+// Handle requests to the '/delete/:userId' path
+app.get('/delete/:userId', verifyToken, (req, res) => {
+    const userId = req.params.userId;
+    let sql = `DELETE
+               from users
+               where id = ${userId}`;
+    let query = connection.query(sql, (err, result) => {
+        if (err) throw err;
+        // Redirect to the root path after deleting data
+        res.redirect('/');
+    });
+});
+
+// Start the server and listen on port 3000
+app.listen(3000, () => {
+    console.log('Server is running at port 3000');
+});
+
+
+
+USER_ADD.EJS
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title><%= title %></title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Include Bootstrap CSS from CDN -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <!-- Include jQuery from CDN -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <!-- Include Popper.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <!-- Include Bootstrap JS from CDN -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <!-- Display the title dynamically -->
+  <h2><%= title %></h2>
+  <!-- Form for adding a new user, with action set to "/save" and method set to "post" -->
+  <form action="/save" method="post">
+    <!-- Form input for user's name -->
+    <div class="form-group">
+      <label for="name">Name:</label>
+      <input type="text" class="form-control" id="email" placeholder="Enter Name" name="name" required>
+    </div>
+    <!-- Form input for user's email -->
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" class="form-control" id="email" placeholder="Enter email" name="email" required>
+    </div>
+    <!-- Form input for user's phone number -->
+    <div class="form-group">
+      <label for="phone">Phone No:</label>
+      <input type="text" class="form-control" id="pwd" placeholder="Enter Phone No" name="phone_no" required>
+    </div>
+    <!-- Submit button for the form -->
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
+
+</body>
+</html>
+
+
+USER_EDIT.EJS
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title><%= title %></title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Include Bootstrap CSS from CDN -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <!-- Include jQuery from CDN -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <!-- Include Popper.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <!-- Include Bootstrap JS from CDN -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <!-- Display the title dynamically -->
+  <h2><%= title %></h2>
+  <!-- Form for updating a user, with action set to "/update" and method set to "post" -->
+  <form action="/update" method="post">
+    <!-- Hidden input field to store the user's ID -->
+    <input type="hidden" value="<%= user.id %>" name="id">
+    <!-- Form input for user's name, with the value populated from the user object -->
+    <div class="form-group">
+      <label for="name">Name:</label>
+      <input type="text" class="form-control" id="email" placeholder="Enter Name" value="<%= user.name %>" name="name" required>
+    </div>
+    <!-- Form input for user's email, with the value populated from the user object -->
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" class="form-control" id="email" placeholder="Enter email" value="<%= user.email %>" name="email" required>
+    </div>
+    <!-- Form input for user's phone number, with the value populated from the user object -->
+    <div class="form-group">
+      <label for="phone">Phone No:</label>
+      <input type="text" class="form-control" id="pwd" placeholder="Enter Phone No" value="<%= user.phone_no %>" name="phone_no" required>
+    </div>
+    <!-- Submit button for the form -->
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
+
+</body>
+</html>
+
+USER_INDEX.EJS
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title><%= title %></title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Include Bootstrap CSS from CDN -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <!-- Include jQuery from CDN -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <!-- Include Popper.js from CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <!-- Include Bootstrap JS from CDN -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <!-- Display the title dynamically -->
+  <h2><%= title %></h2>
+  <!-- Link to add a new user, leading to the "/add" route -->
+  <a href="/add" class="btn btn-sm btn-primary">Add User</a><br/><br/>
+  <!-- Table for displaying user data with Bootstrap styling -->
+  <table class="table table-dark table-striped">
+    <thead>
+      <tr>
+        <!-- Table header with column names -->
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone No.</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+        <!-- Loop through each user in the 'users' array -->
+        <% users.forEach(function(user){ %>
+            <!-- Table row for each user -->
+            <tr>
+                <!-- Display the user's name, email, and phone number -->
+                <td><%= user.name %></td>
+                <td><%= user.email %></td>
+                <td><%= user.phone_no %></td>
+                <!-- Actions for editing and deleting the user -->
+                <td>
+                    <a href="edit/<%= user.id %>" class="btn btn-sm btn-primary">Edit</a>
+                    <a href="delete/<%= user.id %>" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+        <% }); %>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>
+
+
+
+
+
