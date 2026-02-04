@@ -1,4 +1,0 @@
-I works as python developer role. i worked Penna Cements Industries Limited [PCIL] my portal project.
-i am responsible for my portal website development and enhancement.
-
-I works as backend developer[nodejs] . i worked two live project [shree shakthi broilers & HNU]. using expressjs framework , nodejs as a backend and SQL  as a database for the project. i am responsible for API developement
